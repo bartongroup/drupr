@@ -1,7 +1,7 @@
 Package: drupr
 Type: Package
 Title: DDU drug predictor
-Version: 0.1.0
+Version: 0.1.1
 Author: Marek Gierlinski
 Maintainer: Marek Gierlinski <mgierlinski@dundee.ac.uk>
 Description: Prediction of drug properties with random forests.

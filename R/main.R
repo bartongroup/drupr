@@ -15,7 +15,7 @@ select <- dplyr::select
 #' @param min_good Minimum number of non-missing values for a variable to be considered.
 #' @param max_cat_levels Maximum number of levels (unique values) for a categorical variable to be considered.
 #'
-#' @return A tibble with predicted values and their uncertainties.
+#' @return A list with tibbles containing results.
 #' @export
 ddu_prediction <- function(train_file, info_file, test_file, verbose=TRUE, min_unique=2, min_good=1500, max_cat_levels=10) {
 
