@@ -85,11 +85,16 @@ merge_ph <- function(desc_file, ph2_file, verbose=TRUE) {
 #'
 #' @return A tibble with data with renamed columns.
 #' @export
-rename_for_vd <- function(in_file, rename_file) {
+rename_for_vd <- function(in_file, rename_file, verbose=FALSE) {
   dat <- read_csv(in_file, show_col_types = FALSE)
 
   r <- read_csv(rename_file, show_col_types = FALSE) %>%
     filter(original_variable %in% colnames(dat))
+
+  if(verbose) {
+    cat("\nRenaming the following columns:\n")
+    print(r)
+  }
 
   ren <- set_names(r$original_variable, r$renamed_variable)
 
