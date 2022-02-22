@@ -30,7 +30,7 @@ ddu_prediction(
 \item{max_cat_levels}{Maximum number of levels (unique values) for a categorical variable to be considered.}
 }
 \value{
-A tibble with predicted values and their uncertainties.
+A list with tibbles containing results.
 }
 \description{
 Drug properties prediction

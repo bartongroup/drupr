@@ -136,8 +136,9 @@ predict_new_rf_exp <- function(set, resp_var, newdat, min_unique=2, min_good=150
 
 missing_values <- function(newdat) {
   newdat %>%
-    pivot_longer(-Name) %>%
-    filter(is.na(value)) %>%
+    mutate(across(-Name, is.na)) %>%
+    pivot_longer(-Name, values_to = "missing") %>%
+    filter(missing) %>%
     mutate(value = "+") %>%
     pivot_wider(Name, values_fill = "-")
 }
