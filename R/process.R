@@ -2,13 +2,13 @@
 
 # Main function to process raw data
 
-process_training_data <- function(raw, info, cols_nolog=NULL,
+process_training_data <- function(raw, info, cols_nolog = NULL,
                         missing_row_limit = 0.95, max_missing = 100, sigma_limit = 5,
-                        cut_tree=0.25, min_group_unique=100,
-                        verbose=FALSE) {
+                        cut_tree = 0.25, min_group_unique = 100,
+                        verbose = FALSE) {
 
-  if(verbose) cat("\nProcessing training data\n")
-  if(verbose) cat(" ", nrow(raw), "compounds in training set\n")
+  if (verbose) cat("\nProcessing training data\n")
+  if (verbose) cat(" ", nrow(raw), "compounds in training set\n")
 
   cols_id <- info %>% filter(type == "id") %>% pull(variable)
   cols_remove <- info %>% filter(type == "none") %>% pull(variable)
@@ -20,7 +20,7 @@ process_training_data <- function(raw, info, cols_nolog=NULL,
 
   # properties of all variables
   props <- variable_properties(dg %>% select(-all_of(cols_id)), cols_nolog = cols_nolog) %>%
-    left_join(info, by=c("original_variable" = "variable")) %>%
+    left_join(info, by = c("original_variable" = "variable")) %>%
     mutate(response = type == "response") %>%
     mutate(response = replace_na(response, FALSE)) %>%
     select(-type) %>%
@@ -78,12 +78,12 @@ process_training_data <- function(raw, info, cols_nolog=NULL,
 
   # all variable info
   vars <- props %>%
-    left_join(bind_rows(cat_props, num_props) %>% select(variable, levels, top_count, zeroes), by="variable")
+    left_join(bind_rows(cat_props, num_props) %>% select(variable, levels, top_count, zeroes), by = "variable")
 
   gr <- group_variables(tab, vars, cut_tree, min_group_unique)
   final_vars <- gr$variables %>% filter(variable %in% colnames(tab))
 
-  if(verbose) {
+  if (verbose) {
     cat("  Variables found:\n")
     cat(sprintf("    %3d not usable\n", length(cols_null)))
     cat(sprintf("    %3d real\n", length(cols_real)))
@@ -108,9 +108,9 @@ process_training_data <- function(raw, info, cols_nolog=NULL,
 
 
 
-process_test_data <- function(raw, train, verbose=FALSE) {
-  if(verbose) cat("\nProcessing test data\n")
-  if(verbose) cat(" ", nrow(raw), "compounds in test set\n")
+process_test_data <- function(raw, train, verbose = FALSE) {
+  if (verbose) cat("\nProcessing test data\n")
+  if (verbose) cat(" ", nrow(raw), "compounds in test set\n")
 
   dg <- raw
 
@@ -129,7 +129,7 @@ process_test_data <- function(raw, train, verbose=FALSE) {
   good_vars <- props$original_variable
   varcomp <- select(train_vars, original_variable) %>%
     add_column(in_train = TRUE) %>%
-    full_join(test_vars %>% add_column(in_test = TRUE), by="original_variable") %>%
+    full_join(test_vars %>% add_column(in_test = TRUE), by = "original_variable") %>%
     mutate(
       in_train = replace_na(in_train, FALSE),
       in_test = replace_na(in_test, FALSE)
@@ -148,7 +148,7 @@ process_test_data <- function(raw, train, verbose=FALSE) {
   d_int <- dg[, cols_int]
   d_cat <- dg[, cols_cat]
 
-  if(ncol(d_cat) > 0) {
+  if (ncol(d_cat) > 0) {
     d_cat <- d_cat %>%
       mutate_all(convert_yes_no) %>%
       bind_cols(select(dg, all_of(cols_numcat))) %>%
@@ -167,8 +167,8 @@ process_test_data <- function(raw, train, verbose=FALSE) {
 
   # level mismatch
   cat_match <- cat_props %>%
-    left_join(props, by="variable")
-  if(!is.null(cat_match$levels.x)) {
+    left_join(props, by = "variable")
+  if (!is.null(cat_match$levels.x)) {
     mismatch <- cat_match %>%
       select(variable, test_levels = levels.x, train_levels = levels.y) %>%
       levels_mismatch() %>%
@@ -182,20 +182,20 @@ process_test_data <- function(raw, train, verbose=FALSE) {
 
   # all variable info
   vars <- props %>%
-    left_join(bind_rows(cat_props, num_props) %>% select(variable, levels, top_count, zeroes), by="variable")
+    left_join(bind_rows(cat_props, num_props) %>% select(variable, levels, top_count, zeroes), by = "variable")
 
 
   # full table of data: id columns, response columns and predictor columns
   tab <- bind_cols(d_id, d_numlog, d_cat)
 
-  if(verbose) {
+  if (verbose) {
     cat("  Variables found:\n")
     cat(sprintf("    %3d variables in test set\n", nrow(test_vars)))
     cat(sprintf("    %3d selected variables in the training set\n",nrow(descriptor_vars)))
     cat(sprintf("    %3d test variables match training set\n", nrow(vars)))
     cat(sprintf("    %3d training variables not found in test set\n", length(not_in_test)))
     cat(sprintf("    %3d categorical variables with mismatched levels\n", nrow(mismatch)))
-    if(nrow(mismatch) > 0) cat(paste("        ", paste(mismatch$variable, collapse=", "), "\n"))
+    if (nrow(mismatch) > 0) cat(paste("        ", paste(mismatch$variable, collapse = ", "), "\n"))
   }
 
   list(
