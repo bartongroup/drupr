@@ -103,7 +103,7 @@ rename_for_vd <- function(in_file, rename_file, verbose = FALSE) {
 
   if (verbose) {
     cat("\nRenaming the following columns:\n")
-    print(r)
+    print(as.data.frame(r))
   }
 
   ren <- set_names(r$current_variable, r$lombardo_variable)
