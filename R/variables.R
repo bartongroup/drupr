@@ -246,3 +246,15 @@ case_mismatch <- function(x, y) {
     stop("Please correct column names and run this script again.")
   }
 }
+
+
+recode_moka <- function(v) {
+  v %>%
+    replace_na("none") %>%
+    recode(
+      Base = "cationic",
+      Neutral = "neutral",
+      Acid = "anionic",
+      none = "zwitterionic"
+    )
+}

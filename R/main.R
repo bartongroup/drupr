@@ -90,9 +90,11 @@ merge_ph <- function(desc_file, ph2_file, moka_file = NULL, verbose = TRUE) {
 #' Rename variables in a test file to match Lombardo training data.
 #'
 #' @param in_file Input file
-#' @param rename_file Renaming file with two columns: lombardo_variable and current_variable.
+#' @param rename_file Renaming file with two columns: lombardo_variable and
+#'   current_variable.
 #'
-#' @return A tibble with data with renamed columns. Also, values in Moka_status/moka_ionState7.4 are converted to lowercase, as in Lombardo file.
+#' @return A tibble with data with renamed columns. Also, values in Moka_status
+#'   are converted  to Lombardo convention.
 #' @export
 rename_for_vd <- function(in_file, rename_file, verbose = FALSE) {
   dat <- read_csv(in_file, show_col_types = FALSE, na = c("", "NA", "n/a", "N/A", "None"), guess_max = 10000)
@@ -110,7 +112,9 @@ rename_for_vd <- function(in_file, rename_file, verbose = FALSE) {
 
   d <- dat %>%
     rename(all_of(ren))
-  if (!is.null(d[["moka_ionState7.4"]])) d$moka_ionState7.4 <- tolower(d$moka_ionState7.4)
+  if (!is.null(d[["moka_ionState7.4"]])) {
+    d$moka_ionState7.4 <- recode_moka(d$moka_ionState7.4)
+  }
   d
 }
 
