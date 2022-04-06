@@ -232,3 +232,17 @@ levels_mismatch <- function(m) {
     mutate(matched = all(test_levels %in% train_levels)) %>%
     mutate_at(vars(test_levels, train_levels), ~str_c(.x, collapse = ","))
 }
+
+# Check if there are case mismatches between two sets of variable names
+case_mismatch <- function(x, y) {
+  mis <- setdiff(intersect(tolower(x), tolower(y)), tolower(intersect(x, y)))
+  if (length(mis) > 0) {
+    cat("\nCase mismatch detected between variables in the input file and training data.\n")
+    tibble(
+      `Need this column name` = x[tolower(x) %in% mis],
+      `Column found in input file` = y[tolower(y) %in% mis]
+    ) %>%
+      print()
+    stop("Please correct column names and run this script again.")
+  }
+}

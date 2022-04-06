@@ -17,16 +17,17 @@ select <- dplyr::select
 #'
 #' @return A list with tibbles containing results.
 #' @export
-ddu_prediction <- function(train_file, info_file, test_file, verbose=TRUE, min_unique=2, min_good=1500, max_cat_levels=10) {
+ddu_prediction <- function(train_file, info_file, test_file, verbose = TRUE, min_unique = 2, min_good = 1500, max_cat_levels = 10) {
 
   train_raw <- import_data(train_file, verbose)
   variable_info <- read_csv(info_file, show_col_types = FALSE, progress = FALSE)
   train_set <- process_training_data(train_raw, variable_info, verbose = verbose)
 
   test_raw <- import_data(test_file, verbose)
+  case_mismatch(colnames(train_raw), colnames(test_raw))
   test_set <- process_test_data(test_raw, train_set, verbose = verbose)
 
-  predict_new_rf_exps(train_set, test_set, min_unique, min_good, max_cat_levels, verbose=verbose)
+  predict_new_rf_exps(train_set, test_set, min_unique, min_good, max_cat_levels, verbose = verbose)
 }
 
 
@@ -93,11 +94,12 @@ merge_ph <- function(desc_file, ph2_file, moka_file = NULL, verbose = TRUE) {
 #'
 #' @return A tibble with data with renamed columns. Also, values in Moka_status/moka_ionState7.4 are converted to lowercase, as in Lombardo file.
 #' @export
-rename_for_vd <- function(in_file, rename_file, verbose=FALSE) {
+rename_for_vd <- function(in_file, rename_file, verbose = FALSE) {
   dat <- read_csv(in_file, show_col_types = FALSE, na = c("", "NA", "n/a", "N/A", "None"), guess_max = 10000)
 
-  r <- read_csv(rename_file, show_col_types = FALSE) %>%
-    filter(current_variable %in% colnames(dat))
+  r <- read_csv(rename_file, show_col_types = FALSE)
+  case_mismatch(r$current_variable, colnames(dat))
+  r <- filter(r, current_variable %in% colnames(dat))
 
   if (verbose) {
     cat("\nRenaming the following columns:\n")
