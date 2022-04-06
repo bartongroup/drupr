@@ -35,25 +35,27 @@ ddu_prediction <- function(train_file, info_file, test_file, verbose=TRUE, min_u
 #'
 #' @param desc_file Main file with all data and pH7.4 values
 #' @param ph2_file File with pH2 values.
+#' @param moka_file File with Moka designations (optional)
 #' @param verbose Logical. If TRUE, progress information will be outputted to the console.
 #'
 #' @return A tibble with merged values.
 #' @export
-merge_ph <- function(desc_file, ph2_file, verbose=TRUE) {
+merge_ph <- function(desc_file, ph2_file, moka_file = NULL, verbose = TRUE) {
   desc <- read_excel_ph(desc_file, verbose)
   ph2 <- read_excel_ph(ph2_file, verbose)
+  if (!is.null(moka_file)) moka <- read_excel_ph(moka_file, verbose)
 
   ph2_sel <- ph2 %>%
     select("Name", where(is.numeric))
   ph_cols <- colnames(ph2_sel)[2:ncol(ph2_sel)]
-  if(verbose) cat(paste("\npH columns found:", paste(ph_cols, collapse = ", "), "\n"))
+  if (verbose) cat(paste("\npH columns found:", paste(ph_cols, collapse = ", "), "\n"))
 
   desc_cols <- desc %>%
     select(where(is.numeric)) %>%
     colnames()
 
   mtch <- ph_cols %in% desc_cols
-  if(!all(mtch)) {
+  if (!all(mtch)) {
     cat(paste("\nError: pH columns not found in the descriptor file:", paste(ph_cols[!mtch], collapse = ","), "\n"))
     stop()
   }
@@ -66,14 +68,20 @@ merge_ph <- function(desc_file, ph2_file, verbose=TRUE) {
   ph2_names <- glue::glue("G+_pH2_{ph_cols}")
   desc_names <- glue::glue("G+_ph7.4_{ph_cols}")
 
-  if(verbose) cat(paste("\nCreating the following columns:\n  ", paste(ph2_names, collapse = ", "), "\n  ", paste(desc_names, collapse = ", "), "\nin the output file.\n"))
+  if (verbose) cat(paste("\nCreating the following columns:\n  ", paste(ph2_names, collapse = ", "), "\n  ", paste(desc_names, collapse = ", "), "\nin the output file.\n"))
 
   colnames(ph2_sel) <- c("Name", ph2_names)
   colnames(desc_sel) <- c("Name", desc_names)
 
-  desc_rest %>%
+  res <- desc_rest %>%
     left_join(desc_sel, by = "Name") %>%
     left_join(ph2_sel, by = "Name")
+  if (!is.null(moka_file)) {
+    res <- res %>%
+      left_join(moka, by = "Name")
+  }
+
+  res
 }
 
 
