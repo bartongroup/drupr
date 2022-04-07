@@ -34,7 +34,8 @@ process_training_data <- function(raw, info, cols_nolog = NULL,
   cols_mis <- mis_stats %>%
     filter(n_row_good < min_good & nbad > max_missing) %>%
     pull(variable)
-  props <- props %>% mutate(mis = original_variable %in% cols_mis)
+  props <- props %>%
+    mutate(mis = original_variable %in% cols_mis)
 
   # find useless "null" variables - all missing or only one unique value
   cols_null <- props %>% filter(null) %>% pull(original_variable)
@@ -82,6 +83,7 @@ process_training_data <- function(raw, info, cols_nolog = NULL,
 
   gr <- group_variables(tab, vars, cut_tree, min_group_unique)
   final_vars <- gr$variables %>% filter(variable %in% colnames(tab))
+  n_sel <- final_vars %>% filter(selected & !mis & !null) %>% nrow()
 
   if (verbose) {
     cat("  Variables found:\n")
@@ -92,7 +94,7 @@ process_training_data <- function(raw, info, cols_nolog = NULL,
     cat(sprintf("    %3d numeric converted into categorical\n", length(cols_numcat)))
     cat(sprintf("    %3d categorical\n", length(cols_cat)))
     cat("  Grouping of similar variables perfomed:\n")
-    cat(sprintf("    %3d variables selected for downstream analysis\n", sum(final_vars$selected)))
+    cat(sprintf("    %3d variables selected for downstream analysis\n", n_sel))
   }
 
   list(
@@ -112,22 +114,18 @@ process_test_data <- function(raw, train, verbose = FALSE) {
   if (verbose) cat("\nProcessing test data\n")
   if (verbose) cat(" ", nrow(raw), "compounds in test set\n")
 
-  dg <- raw
-
-  train_vars <- train$variables %>%
-    filter(predictor)
+  dg <- raw %>% select(-all_of(train$cols_id))
 
   descriptor_vars <- train$variables %>%
-    filter(predictor & selected)
+    filter(predictor & selected & !mis & !null)
 
   test_vars <- tibble(original_variable = colnames(dg))
 
   # properties of all variables
-  props <- train_vars %>%
+  props <- descriptor_vars %>%
     filter(original_variable %in% test_vars$original_variable)
 
-  good_vars <- props$original_variable
-  varcomp <- select(train_vars, original_variable) %>%
+  varcomp <- select(descriptor_vars, original_variable) %>%
     add_column(in_train = TRUE) %>%
     full_join(test_vars %>% add_column(in_test = TRUE), by = "original_variable") %>%
     mutate(
@@ -143,7 +141,7 @@ process_test_data <- function(raw, train, verbose = FALSE) {
   cols_cat <- props %>% filter(!null & categorical) %>% pull(original_variable)
 
   # make tables for ids, numerical and categorical variables
-  d_id <- dg[, train$cols_id]
+  d_id <- raw[, train$cols_id]
   d_real <- dg[, cols_real]
   d_int <- dg[, cols_int]
   d_cat <- dg[, cols_cat]
