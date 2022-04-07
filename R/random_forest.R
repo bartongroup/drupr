@@ -107,6 +107,15 @@ predict_new_rf_exp <- function(set, resp_var, newdat, min_unique = 2, min_good =
     select(-c(Name, response))
   common_vars <- intersect(colnames(train), colnames(newdat))
 
+  # Lombardo training data contain Moka_status 'Zwitterionic', which is not
+  # included in test files, so we need to extend levels to match. Otherwise
+  # predictor dies.
+  if ("Moka_status" %in% common_vars) {
+    moka_levels <- levels(set$tab$Moka_status)
+    newdat <- newdat %>%
+      mutate(Moka_status = Moka_status %>% as.character %>% factor(levels = moka_levels))
+  }
+
   mdl <- random_forest_model(set, resp_var, min_unique, min_good, max_cat_levels, sel = common_vars, seed = seed, ntree = n_tree, importance = TRUE)
 
   # need to rename variables for RF

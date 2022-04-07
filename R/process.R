@@ -180,6 +180,7 @@ process_test_data <- function(raw, train, verbose = FALSE) {
 
   # all variable info
   vars <- props %>%
+    select(-c(levels, top_count, zeroes)) %>%
     left_join(bind_rows(cat_props, num_props) %>% select(variable, levels, top_count, zeroes), by = "variable")
 
 
