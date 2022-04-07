@@ -151,7 +151,7 @@ predict_new_rf_exps <- function(train_set, test_set, min_unique = 2, min_good = 
   mdls <- map(resp_vars, function(resp_var) {
     if (verbose) cat(paste("    ", resp_var, " "))
     pr <- predict_new_rf_exp(train_set, resp_var, test_set$tab, min_unique, min_good, max_cat_levels, seed)
-    if (verbose) cat(paste(nrow(pr$prediction), "compunds predicted\n"))
+    if (verbose) cat(paste(nrow(pr$prediction), "compounds predicted\n"))
     pr
   }) %>%
     set_names(resp_vars)
@@ -165,6 +165,7 @@ predict_new_rf_exps <- function(train_set, test_set, min_unique = 2, min_good = 
   imp <- rf_importance(mdls)
 
   list(
+    test_data = test_set$tab,
     train_variables = train_set$variables,
     variable_comparison = test_set$variable_comparison,
     models = mdls,
